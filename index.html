@@ -275,7 +275,7 @@ alert("S'han acabat les cartes! Prem 'Barreja totes les cartes' per començar de
 return;
 }
 
-// si ja hi ha carta al centre → va a descartes
+// si ja hi ha una carta al centre → passa a descartes
 if(currentCard !== null){
 discardPile.push(currentCard);
 renderDiscard();
@@ -288,14 +288,22 @@ currentCard = card;
 
 // mostrar revers
 currentCardDiv.innerHTML = `<img src="${backImage}" id="flip-card">`;
-
 let flipCard = document.getElementById("flip-card");
 
 // animació flip
 setTimeout(() => {
 
 flipCard.classList.add("card-flip");
+
+// canviar a la carta real
+setTimeout(() => {
+
 flipCard.src = card;
+
+// tornar a posar la carta plana perquè es vegi
+flipCard.classList.remove("card-flip");
+
+},400);
 
 },100);
 
