@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Roba una carta</title>
+
 <style>
 body {
     font-family: serif;
@@ -41,17 +42,30 @@ button:hover {
     align-items: center;
 }
 
-#deck img, #discard img, #current-card img {
+#deck img, #discard img {
     max-width: 150px;
     border-radius: 10px;
     box-shadow: 0 0 20px black;
     cursor: pointer;
-    transition: transform 0.8s;
-    backface-visibility: hidden;
+    transition: transform 0.3s;
+}
+
+#discard img {
+    max-width: 100px;
+}
+
+#current-card {
+    min-width: 350px;
 }
 
 #current-card img {
-    max-width: 250px;
+    max-width: 380px;
+    display: block;
+    margin: auto;
+    border-radius: 14px;
+    box-shadow: 0 0 30px black;
+    transition: transform 0.8s;
+    backface-visibility: hidden;
 }
 
 .card-flip {
@@ -61,39 +75,59 @@ button:hover {
 h3 {
     margin-bottom: 10px;
 }
+
+/* preview flotant */
+
+#hover-preview {
+    position: fixed;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+}
+
+#hover-preview img {
+    width: 260px;
+    border-radius: 12px;
+    box-shadow: 0 0 25px black;
+}
 </style>
 </head>
+
 <body>
 
 <h1>Roba una carta</h1>
+
 <div>
-    <button onclick="drawCard()">Roba una carta</button>
-    <button onclick="shuffleDeck()">Barreja totes les cartes</button>
+<button onclick="drawCard()">Roba una carta</button>
+<button onclick="shuffleDeck()">Barreja totes les cartes</button>
 </div>
 
 <div id="game">
-    <div id="deck-container">
-        <h3>Baralla</h3>
-        <div id="deck"></div>
-    </div>
 
-    <div id="current-card">
-        <!-- Carta actual sortirà aquí -->
-    </div>
+<div id="deck-container">
+<h3>Baralla</h3>
+<div id="deck"></div>
+</div>
 
-    <div id="discard-container">
-        <h3>Descarte</h3>
-        <div id="discard"></div>
-    </div>
+<div id="current-card"></div>
+
+<div id="discard-container">
+<h3>Descarte</h3>
+<div id="discard"></div>
+</div>
+
+</div>
+
+<div id="hover-preview">
+<img src="">
 </div>
 
 <script>
+
 // ----------------------
-// CONFIGURA AQUÍ LES CARTES
+// CONFIGURA LES CARTES
 // ----------------------
 
-// carpeta "cartes", ex: "cartes/carta1.jpg"
-// Exemple amb 5 cartes, afegeix fins a 60+
 let cardList = [
 "cartes/21-min.png",
 "cartes/23-min.png",
@@ -154,86 +188,146 @@ let cardList = [
 "cartes/78-min.png"
 ];
 
-// imatge del revers
 let backImage = "cartes/back.png";
 
 // ----------------------
-// VARIABLES
-// ----------------------
-let deck = [...cardList]; // copia inicial
+
+let deck = [...cardList];
 let discardPile = [];
 
 let deckDiv = document.getElementById("deck");
 let discardDiv = document.getElementById("discard");
 let currentCardDiv = document.getElementById("current-card");
 
-// inicialitza la baralla visual
+// ----------------------
+// BARALLA
+// ----------------------
+
 function renderDeck() {
-    deckDiv.innerHTML = "";
-    if(deck.length > 0){
-        let topCard = document.createElement("img");
-        topCard.src = backImage;
-        deckDiv.appendChild(topCard);
-    }
+
+deckDiv.innerHTML = "";
+
+if(deck.length > 0){
+
+let topCard = document.createElement("img");
+topCard.src = backImage;
+
+deckDiv.appendChild(topCard);
+
 }
+
+}
+
+// ----------------------
+// DESCARTES
+// ----------------------
 
 function renderDiscard() {
-    discardDiv.innerHTML = "";
-    discardPile.forEach(c => {
-        let img = document.createElement("img");
-        img.src = c;
-        img.style.maxWidth = "100px";
-        discardDiv.appendChild(img);
-    });
+
+discardDiv.innerHTML = "";
+
+discardPile.forEach(c => {
+
+let img = document.createElement("img");
+img.src = c;
+
+img.addEventListener("mouseenter", () => {
+
+let preview = document.getElementById("hover-preview");
+
+preview.style.display = "block";
+preview.querySelector("img").src = c;
+
+});
+
+img.addEventListener("mousemove", e => {
+
+let preview = document.getElementById("hover-preview");
+
+preview.style.left = (e.clientX + 20) + "px";
+preview.style.top = (e.clientY + 20) + "px";
+
+});
+
+img.addEventListener("mouseleave", () => {
+
+let preview = document.getElementById("hover-preview");
+
+preview.style.display = "none";
+
+});
+
+discardDiv.appendChild(img);
+
+});
+
 }
 
 // ----------------------
-// FUNCIONS PRINCIPALS
+// ROBAR CARTA
 // ----------------------
+
 function drawCard() {
-    if(deck.length === 0){
-        alert("S'han acabat les cartes! Prem 'Barreja totes les cartes' per començar de nou.");
-        return;
-    }
 
-    // triar carta aleatòria
-    let randomIndex = Math.floor(Math.random() * deck.length);
-    let card = deck.splice(randomIndex, 1)[0];
-    discardPile.push(card);
+if(deck.length === 0){
 
-    // mostrar carta amb animació gir
-    currentCardDiv.innerHTML = `<img src="${backImage}" id="flip-card">`;
-    let flipCard = document.getElementById("flip-card");
+alert("S'han acabat les cartes! Prem 'Barreja totes les cartes' per començar de nou.");
 
-    setTimeout(() => {
-        flipCard.classList.add("card-flip");
-        flipCard.src = card;
-    }, 100);
+return;
 
-    renderDeck();
-    renderDiscard();
 }
 
-function shuffleDeck() {
-    deck = deck.concat(discardPile);
-    discardPile = [];
+let randomIndex = Math.floor(Math.random() * deck.length);
 
-    // barrejar
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
+let card = deck.splice(randomIndex,1)[0];
 
-    renderDeck();
-    renderDiscard();
-    alert("Les cartes han estat barrejades de nou!");
-}
+discardPile.push(card);
 
-// ----------------------
-// INICIALITZACIÓ
-// ----------------------
+currentCardDiv.innerHTML = `<img src="${backImage}" id="flip-card">`;
+
+let flipCard = document.getElementById("flip-card");
+
+setTimeout(() => {
+
+flipCard.classList.add("card-flip");
+flipCard.src = card;
+
+},100);
+
 renderDeck();
 renderDiscard();
+
+}
+
+// ----------------------
+// BARREJAR
+// ----------------------
+
+function shuffleDeck() {
+
+deck = deck.concat(discardPile);
+discardPile = [];
+
+for (let i = deck.length - 1; i > 0; i--) {
+
+const j = Math.floor(Math.random() * (i + 1));
+
+[deck[i], deck[j]] = [deck[j], deck[i]];
+
+}
+
+renderDeck();
+renderDiscard();
+
+alert("Les cartes han estat barrejades de nou!");
+
+}
+
+// ----------------------
+
+renderDeck();
+renderDiscard();
+
 </script>
 
 </body>
